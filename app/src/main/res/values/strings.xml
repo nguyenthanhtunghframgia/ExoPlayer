@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">ExoPlayer</string>
+    <string name="request_storage_permisson">Need Storage Permisson For Download Videos</string>
+</resources>
