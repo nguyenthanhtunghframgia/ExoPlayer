@@ -9,15 +9,19 @@ import com.google.android.exoplayer2.SimpleExoPlayer
 import com.google.android.exoplayer2.ext.ima.ImaAdsLoader
 import com.google.android.exoplayer2.source.ExtractorMediaSource
 import com.google.android.exoplayer2.source.ads.AdsMediaSource
+import com.google.android.exoplayer2.trackselection.AdaptiveTrackSelection
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector
+import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory
 import com.google.android.exoplayer2.util.Util
 import kotlinx.android.synthetic.main.activity_main.*
 import pub.devrel.easypermissions.EasyPermissions
 
+
 class MainActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
     private var player: SimpleExoPlayer? = null
     private var adsLoader: ImaAdsLoader? = null
+    private var isMute: Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -25,6 +29,15 @@ class MainActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
         initPermissions()
         //
         adsLoader = ImaAdsLoader(this, Uri.parse("ImaAdsUrl"))
+        //
+        imageView.setOnClickListener {
+            if (isMute) {
+                player?.volume = 10f
+            } else {
+                player?.volume = 0f
+            }
+            isMute = !isMute
+        }
     }
 
     override fun onStart() {
@@ -33,21 +46,37 @@ class MainActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
     }
 
     private fun initExo() {
-        val trackSelector = DefaultTrackSelector()
+        // Create a default track selector.
+        val videoTrackSelectionFactory = AdaptiveTrackSelection.Factory()
+        val trackSelector = DefaultTrackSelector(videoTrackSelectionFactory)
+
+        // Create a player instance.
         player = ExoPlayerFactory.newSimpleInstance(this, trackSelector)
-        player_view.player = player
-        //
+
+        // Bind the player to the view.
+        player_view.setPlayer(player)
+
+        //Bandwidth
+        val bandwidthMeter = DefaultBandwidthMeter()
+
+        //DataSource Factory
         val dataSourceFactory = DefaultDataSourceFactory(
             this,
-            Util.getUserAgent(this, "com.example.framgianguyenthanhtungh.exoplayer")
+            Util.getUserAgent(this, "com.example.framgianguyenthanhtungh.exoplayer"),
+            bandwidthMeter
         )
+
+        //VideoSource
         val videoUri = "https://html5demos.com/assets/dizzy.mp4"
         val mediaSource = ExtractorMediaSource.Factory(dataSourceFactory)
             .createMediaSource(Uri.parse(videoUri))
-        //
+
+        //AdsMediaSource
         val adsMediaSource = AdsMediaSource(mediaSource, dataSourceFactory, adsLoader, player_view.overlayFrameLayout)
+
+        //Prepare And Play
         player?.prepare(adsMediaSource)
-        player?.playWhenReady = true
+        player?.playWhenReady = false
     }
 
     private fun initPermissions() {
@@ -85,13 +114,21 @@ class MainActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
     }
 
     private fun releaseExo() {
-        player_view.player = null
-        player?.release()
-        player = null
+        if (player != null) {
+            player_view.player = null
+            player?.release()
+            player = null
+        }
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        adsLoader = null
+        releaseAds()
+    }
+
+    private fun releaseAds() {
+        if (adsLoader != null) {
+            adsLoader = null
+        }
     }
 }
