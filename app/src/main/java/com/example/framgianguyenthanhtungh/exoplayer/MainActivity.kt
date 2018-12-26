@@ -6,7 +6,9 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.exoplayer2.ExoPlayerFactory
 import com.google.android.exoplayer2.SimpleExoPlayer
+import com.google.android.exoplayer2.ext.ima.ImaAdsLoader
 import com.google.android.exoplayer2.source.ExtractorMediaSource
+import com.google.android.exoplayer2.source.ads.AdsMediaSource
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory
 import com.google.android.exoplayer2.util.Util
@@ -15,11 +17,14 @@ import pub.devrel.easypermissions.EasyPermissions
 
 class MainActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
     private var player: SimpleExoPlayer? = null
+    private var adsLoader: ImaAdsLoader? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         initPermissions()
+        //
+        adsLoader = ImaAdsLoader(this, Uri.parse("ImaAdsUrl"))
     }
 
     override fun onStart() {
@@ -34,15 +39,14 @@ class MainActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
         //
         val dataSourceFactory = DefaultDataSourceFactory(
             this,
-            Util.getUserAgent(this, "com.example.framgianguyenthanhtungh.exovideoplayer")
+            Util.getUserAgent(this, "com.example.framgianguyenthanhtungh.exoplayer")
         )
-        val videoUri = "https://www.youtube.com/api/manifest/dash/id/bf5bb2419360daf1/source/" +
-                "youtube?as=fmp4_audio_clear,fmp4_sd_hd_clear&sparams=ip,ipbits,expire,source,id,as&ip=0.0.0." +
-                "0&ipbits=0&expire=19000000000&signature=51AF5F39AB0CEC3E5497CD9C900EBFEAECCCB5C7.8506521BFC3506" +
-                "52163895D4C26DEE124209AA9E&key=ik0"
+        val videoUri = "https://html5demos.com/assets/dizzy.mp4"
         val mediaSource = ExtractorMediaSource.Factory(dataSourceFactory)
             .createMediaSource(Uri.parse(videoUri))
-        player?.prepare(mediaSource)
+        //
+        val adsMediaSource = AdsMediaSource(mediaSource, dataSourceFactory, adsLoader, player_view.overlayFrameLayout)
+        player?.prepare(adsMediaSource)
         player?.playWhenReady = true
     }
 
@@ -84,5 +88,10 @@ class MainActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
         player_view.player = null
         player?.release()
         player = null
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        adsLoader = null
     }
 }

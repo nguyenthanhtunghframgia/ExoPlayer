@@ -37,6 +37,7 @@ dependencies {
     androidTestImplementation("androidx.test:runner:1.1.1")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.1.1")
     implementation("com.google.android.exoplayer:exoplayer:2.9.0")
+    implementation("com.google.android.exoplayer:extension-ima:2.9.0")
     implementation("pub.devrel:easypermissions:2.0.0")
 
     //Navigation
