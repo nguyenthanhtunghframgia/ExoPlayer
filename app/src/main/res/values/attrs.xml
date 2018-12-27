@@ -1,2 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources></resources>
+<resources>
+
+    <declare-styleable name="CustomView">
+        <attr name="view_color" format="color" />
+        <attr name="view_size" format="dimension" />
+    </declare-styleable>
+
+</resources>
