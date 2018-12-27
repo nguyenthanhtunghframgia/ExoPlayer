@@ -1,8 +1,10 @@
 package com.example.framgianguyenthanhtungh.exoplayer
 
 import android.Manifest
+import android.graphics.Typeface
 import android.net.Uri
 import android.os.Bundle
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.exoplayer2.ExoPlayerFactory
 import com.google.android.exoplayer2.SimpleExoPlayer
@@ -43,6 +45,8 @@ class MainActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
     override fun onStart() {
         super.onStart()
         initExo()
+        initMultiChoiceAlertDialog()
+        initSingleChoiceAlertDialog()
     }
 
     private fun initExo() {
@@ -54,7 +58,7 @@ class MainActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
         player = ExoPlayerFactory.newSimpleInstance(this, trackSelector)
 
         // Bind the player to the view.
-        player_view.setPlayer(player)
+        player_view.player = player
 
         //Bandwidth
         val bandwidthMeter = DefaultBandwidthMeter()
@@ -130,5 +134,88 @@ class MainActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
         if (adsLoader != null) {
             adsLoader = null
         }
+    }
+
+    private fun initMultiChoiceAlertDialog() {
+        val builder = AlertDialog.Builder(this@MainActivity)
+
+        val fonts = arrayOf("champagne.ttf", "dancingscript.otf")
+
+        val checkedColors = booleanArrayOf(
+            true,
+            false
+        )
+
+        builder.setMultiChoiceItems(fonts, checkedColors)
+        { _, which, isChecked ->
+
+            checkedColors[which] = isChecked
+        }
+
+        builder.setCancelable(false)
+
+        builder.setTitle("Your preferred fonts?")
+
+        builder.setPositiveButton("OK") { _, _ ->
+            for (i in checkedColors.indices) {
+
+                if (checkedColors[i]) {
+                    edit_text.apply {
+                        text = edit_text.text.append(fonts[i])
+                        typeface = Typeface.createFromAsset(assets, fonts[i])
+                    }
+                } else {
+                    //todo
+                }
+            }
+        }
+
+        builder.setNegativeButton("No") { _, _ ->
+            //todo
+        }
+
+        builder.setNeutralButton("Cancel") { _, _ ->
+            //todo
+        }
+
+        val dialog = builder.create()
+        dialog.show()
+    }
+
+    private fun initSingleChoiceAlertDialog() {
+        var checkedItem: Int? = null
+        val listItems = arrayOf("champagne.ttf", "dancingscript.otf")
+
+        val builder = AlertDialog.Builder(this@MainActivity)
+
+        builder.setTitle("Choose an item")
+
+        builder.setSingleChoiceItems(
+            listItems, -1
+        ) { _, i ->
+            checkedItem = i
+        }
+
+        builder.setCancelable(false)
+
+        builder.setTitle("Your preferred fonts?")
+
+        builder.setPositiveButton("OK") { _, _ ->
+            edit_text.apply {
+                setText(listItems[checkedItem ?: return@setPositiveButton])
+                typeface = Typeface.createFromAsset(assets, listItems[checkedItem ?: return@setPositiveButton])
+            }
+        }
+
+        builder.setNegativeButton("No") { _, _ ->
+            //todo
+        }
+
+        builder.setNeutralButton("Cancel") { _, _ ->
+            //todo
+        }
+
+        val dialog = builder.create()
+        dialog.show()
     }
 }
