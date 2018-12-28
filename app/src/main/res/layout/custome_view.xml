@@ -8,6 +8,7 @@
     <com.example.framgianguyenthanhtungh.exoplayer.views.CustomView
         android:id="@+id/custom_view"
         app:view_size="300dp"
+        app:view_drawable="@drawable/halo"
         app:view_color="@color/colorPrimary"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
